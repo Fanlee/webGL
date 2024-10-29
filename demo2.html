@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body >
+	<svg  style="width: 5000px; height: 5000px" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<!--		<circle cx="800" cy="800" r="800" fill="red"/>-->
+<!--		<circle cx="200" cy="200" r="100" stroke="black"  stroke-width="2" fill="orange" />-->
+	</svg>
+</body>
+<script type="module">
+	import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+	const dataSource = 'https://s5.ssl.qhres2.com/static/b0695e2dd30daa64.json';
+	const svgroot = document.querySelector('svg');
+	async function getJson() {
+		return (await fetch(dataSource)).json()
+	}
+	const data = await getJson()
+	const regions = d3.hierarchy(data)
+		.sum(d => 1)
+		.sort((a, b) => b.value - a.value);
+	const pack = d3.pack()
+		.size([1600, 1600])
+		.padding(3);
+	const root = pack(regions);
+
+	function draw(parent, node, { fillStyle = 'rgba(0,0,0,0.2)', textColor = 'white' } = {}) {
+		const { x, y, r, children } = node
+	  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle')
+		circle.setAttribute('cx', x)
+		circle.setAttribute('cy', y)
+		circle.setAttribute('r', r)
+		circle.setAttribute('fill', fillStyle)
+		parent.appendChild(circle)
+		if(children) {
+			const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+			for(let item of children) {
+				draw(group, item, {fillStyle, textColor})
+			}
+			parent.appendChild(group);
+		}else {
+			const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+			text.setAttribute('fill', textColor)
+			text.setAttribute('font-family', 'Arial');
+			text.setAttribute('font-size', '1.5rem')
+			text.setAttribute('text-anchor', 'middle');
+			text.setAttribute('x', x);
+			text.setAttribute('y', y);
+			const name = node.data.name
+			text.textContent = name
+			parent.appendChild(text)
+		}
+	}
+	draw(svgroot, root)
+
+	// let activeTarget = null;
+	// svgroot.addEventListener('mousemove', (evt) => {
+	// 	let target = evt.target;
+	// 	if(target.nodeName === 'text') target = target.parentNode;
+	// 	if(activeTarget !== target) {
+	// 		if(activeTarget) activeTarget.setAttribute('fill', 'rgba(0, 0, 0, 0.2)');
+	// 	}
+	// 	target.setAttribute('fill', 'rgba(0, 128, 0, 0.1)');
+	// 	activeTarget = target;
+	});
+
+</script>
+</html>

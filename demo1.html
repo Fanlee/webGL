@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+	<canvas width="1600" height="1600" id="myCanvas"></canvas>
+</body>
+<script type="module">
+	import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+	const dataSource = 'https://s5.ssl.qhres2.com/static/b0695e2dd30daa64.json';
+	const canvas = document.getElementById('myCanvas')
+	const context = canvas.getContext('2d')
+	async function getJson() {
+	  return (await fetch(dataSource)).json()
+	}
+	const data = await getJson()
+	const regions = d3.hierarchy(data)
+	  .sum(d => 1)
+	  .sort((a, b) => b.value - a.value);
+	const pack = d3.pack()
+	  .size([1600, 1600])
+	  .padding(3);
+	const root = pack(regions);
+	console.log(root)
+	const TAU = 2 * Math.PI
+	function draw(ctx, node, { fillStyle = 'rgba(0,0,0,0.2)', textColor = 'white' } = {}) {
+	  const children = node.children
+	  const { x, y, r } = node
+	  ctx.fillStyle = fillStyle
+	  ctx.beginPath()
+	  ctx.arc(x, y, r, 0, TAU)
+	  ctx.fill()
+	  if(children) {
+	    for(let item of children) {
+			draw(ctx, item)
+	    }
+	  } else {
+	    const name = node.data.name
+	    ctx.fillStyle = textColor
+	    ctx.font = '1.5rem Arial'
+	    ctx.textAlign = 'center'
+	    ctx.fillText(name, x, y)
+	  }
+	}
+	draw(context, root)
+</script>
+</html>

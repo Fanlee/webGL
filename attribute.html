@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400"></canvas>
+</body>
+<script type="module">
+	import { initShader } from './lib/initShader.js'
+	const canvas =  document.getElementById('canvas')
+	const gl = canvas.getContext('webgl')
+	// 创建顶点着色器源码
+	const VERTEX_SHADER_SOURCE = `
+		attribute vec4 aPosition;
+		void main() {
+			gl_Position = aPosition;
+			gl_PointSize = 20.0;
+		}
+	`
+	// 创建片元着色器
+	const FRAGMENT_SHADER_SOURCE = `
+		void main() {
+			gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+		}
+	`
+
+	const program = initShader(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)
+	const aPosition = gl.getAttribLocation(program, 'aPosition')
+
+	let x = 0.0
+	setInterval(() => {
+		x += 0.1
+		if(x >= 1.0) {
+			x = 0.0
+		}
+		gl.vertexAttrib2f(aPosition, x, 0.5)
+		//执行绘制
+		gl.drawArrays(gl.POINTS, 0, 1)
+	}, 200)
+</script>
+
+</html>
